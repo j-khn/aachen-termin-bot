@@ -1,4 +1,5 @@
 from typing import Final
+import re
 import requests
 import telegram
 from dotenv import load_dotenv
@@ -29,6 +30,7 @@ URL: Final = 'https://aachen-termin-bot.onrender.com'
 
 ABHOLUNG_CHANNEL_ID: Final = '-1004394869565'
 FH_AACHEN_CHANNEL_ID: Final = '-1002483658914'
+last_abholung_dates = None
 
 APPOINTMENT_LINK = "https://termine.staedteregion-aachen.de/auslaenderamt/select2?md=1"
 
@@ -64,9 +66,22 @@ def job1():
     # notify_aachen_anmeldung(bot)
 
 def notify_abholung(bot: telegram.Bot):
+    global last_abholung_dates
     is_available, res = abholung_termin()
+    dates = frozenset(re.findall(r'\d{2}\.\d{2}\.\d{4}', res))
+    previous_dates = last_abholung_dates
+
+    if dates == last_abholung_dates:
+        logging.info("Abholung appointment dates are unchanged; skipping notification")
+        return
+
+    last_abholung_dates = dates
     if is_available:
         text = f"{res}\n[🔥 Book Now\!]({APPOINTMENT_LINK})"
+        text = text.replace(".", "\.")
+        bot.send_message(chat_id=ABHOLUNG_CHANNEL_ID, text=text, parse_mode='MarkdownV2')
+    elif previous_dates:
+        text = "Abholung appointment dates changed.\nNo appointments are currently available."
         text = text.replace(".", "\.")
         bot.send_message(chat_id=ABHOLUNG_CHANNEL_ID, text=text, parse_mode='MarkdownV2')
 
