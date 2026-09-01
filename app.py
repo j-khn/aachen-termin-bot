@@ -27,7 +27,7 @@ CHANNEL_ID: Final = '@aachen_termin'
 HBF_CHANNEL_ID: Final = '@hbf_termin'
 URL: Final = 'https://aachen-termin-bot.onrender.com'
 
-ABHOLUNG_CHANNEL_ID: Final = '-1002267097890'
+ABHOLUNG_CHANNEL_ID: Final = '-1004394869565'
 FH_AACHEN_CHANNEL_ID: Final = '-1002483658914'
 
 APPOINTMENT_LINK = "https://termine.staedteregion-aachen.de/auslaenderamt/select2?md=1"
