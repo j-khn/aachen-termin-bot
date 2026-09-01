@@ -7,6 +7,7 @@ from flask import Flask
 from flask_apscheduler import APScheduler
 from termin import superc_termin, aachen_hbf_termin, abholung_termin, fh_termin
 from an import notify_aachen_anmeldung
+import logging
 
 class Config:
     SCHEDULER_API_ENABLED = True
@@ -48,8 +49,18 @@ def hello_world():
 @scheduler.task('interval', id='do_job_1', seconds=60, misfire_grace_time=900)
 def job1():    
     bot = telegram.Bot(token=TOKEN)
-    notify_aachen_termin(bot)
-    notify_abholung(bot)
+    # Keep the Abholung monitor independent from the other appointment
+    # monitors. A failure in one scraper must not prevent this check from
+    # running on the next scheduler tick.
+    try:
+        notify_abholung(bot)
+    except Exception:
+        logging.exception("Abholung appointment check failed")
+
+    try:
+        notify_aachen_termin(bot)
+    except Exception:
+        logging.exception("General Aachen appointment check failed")
     # notify_aachen_anmeldung(bot)
 
 def notify_abholung(bot: telegram.Bot):
